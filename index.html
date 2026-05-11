@@ -1,0 +1,3259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ExamForge — Ultimate Exam Platform</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #f0f4fa;
+  --surface: #ffffff;
+  --surface2: #f5f7fc;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.15);
+  --accent: #4f8eff;
+  --accent2: #a78bfa;
+  --success: #059669;
+  --danger: #dc2626;
+  --warning: #d97706;
+  --text: #0f172a;
+  --text2: #475569;
+  --text3: #94a3b8;
+  --glow: 0 0 40px rgba(79,142,255,0.10);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Sora', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── BACKGROUND MESH ─── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(79,142,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(167,139,250,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 60% 30%, rgba(5,150,105,0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ─── NOISE TEXTURE ─── */
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ─── GLASS CARD ─── */
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
+  border-radius: var(--radius);
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── SETUP SCREEN ─── */
+#setup {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  position: relative; z-index: 1;
+}
+
+.brand {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.brand-logo {
+  width: 56px; height: 56px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  margin: 0 auto 16px;
+  box-shadow: 0 8px 32px rgba(79,142,255,0.4);
+}
+
+.brand h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #1e3a8a;
+}
+
+.brand p {
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+.setup-card {
+  width: 100%;
+  max-width: 580px;
+  padding: 36px;
+}
+
+.field-group {
+  margin-bottom: 24px;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+input[type="number"],
+input[type="text"],
+input[type="file"] {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: #0f172a;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79,142,255,0.15);
+}
+
+input[type="file"] {
+  cursor: pointer;
+  padding: 10px 16px;
+  color: var(--text2);
+}
+
+textarea {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  height: 120px;
+  resize: vertical;
+  outline: none;
+  line-height: 1.6;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79,142,255,0.15);
+}
+
+textarea::placeholder { color: var(--text3); }
+
+.time-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.time-row input {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+}
+
+.time-sep {
+  color: var(--text2);
+  font-size: 1.2rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: var(--radius-sm);
+  font-family: 'Sora', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.01em;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 0.2s;
+}
+
+.btn:hover::after { background: rgba(255,255,255,0.07); }
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #3a72e8);
+  color: white;
+  box-shadow: 0 4px 20px rgba(79,142,255,0.35);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 28px rgba(79,142,255,0.5);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: var(--surface2);
+  color: #334155;
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.btn-ghost:hover { color: #0f172a; border-color: var(--border2); background: #eef2f9; }
+
+.btn-warning {
+  background: rgba(251,191,36,0.12);
+  color: var(--warning);
+  border: 1px solid rgba(251,191,36,0.25);
+}
+
+.btn-warning:hover { background: rgba(251,191,36,0.2); }
+
+.btn-danger {
+  background: rgba(239,68,68,0.12);
+  color: var(--danger);
+  border: 1px solid rgba(239,68,68,0.25);
+}
+
+.btn-danger:hover { background: rgba(239,68,68,0.22); }
+
+.btn-success {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+  box-shadow: 0 4px 20px rgba(52,211,153,0.3);
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+
+.btn-row-between {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+/* ─── SECTION HEADER IN FORM ─── */
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(79,142,255,0.10);
+  border: 1px solid rgba(79,142,255,0.25);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  margin-bottom: 24px;
+}
+
+/* ─── DIVIDER ─── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+
+.divider-label {
+  text-align: center;
+  position: relative;
+  margin: 20px 0;
+}
+
+.divider-label::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  height: 1px;
+  background: var(--border);
+}
+
+.divider-label span {
+  position: relative;
+  background: #ffffff;
+  padding: 0 12px;
+  font-size: 0.75rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ─── HINTS ─── */
+.hint {
+  font-size: 0.75rem;
+  color: var(--text3);
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ────────────────────────────────────────────────────── */
+/* ─── EXAM LAYOUT ─── */
+#examLayout {
+  display: none;
+  height: 100vh;
+  overflow: hidden;
+  position: relative; z-index: 1;
+}
+
+/* On mobile, stacked layout needs scroll */
+@media (max-width: 767px) {
+  #examLayout { height: auto; min-height: 100vh; overflow: visible; }
+  #examBody { height: auto; min-height: calc(100vh - 54px); overflow: visible; }
+  #left { overflow-y: visible; height: auto; }
+}
+
+/* ─── EXAM TOP BAR ─── */
+#examTopBar {
+  height: 60px;
+  background: rgba(255,255,255,0.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 20px;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+
+.topbar-brand {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+#sectionPill {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(79,142,255,0.10);
+  border: 1px solid rgba(79,142,255,0.25);
+  border-radius: 999px;
+  padding: 6px 22px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1d4ed8;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+#timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(217,119,6,0.08);
+  border: 1px solid rgba(217,119,6,0.18);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--warning);
+  transition: all 0.3s;
+}
+
+#timer.urgent {
+  background: rgba(220,38,38,0.08);
+  border-color: rgba(220,38,38,0.25);
+  color: var(--danger);
+  animation: pulse 1s infinite;
+}
+
+#timer svg { width: 14px; height: 14px; }
+
+/* ─── EXAM BODY ─── */
+#examBody {
+  display: flex;
+  height: 100vh;
+  padding-top: 60px;
+}
+
+/* ─── LEFT PANEL ─── */
+#left {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+#left::-webkit-scrollbar { width: 4px; }
+#left::-webkit-scrollbar-track { background: transparent; }
+#left::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+/* ─── QUESTION CARD ─── */
+#questionCard {
+  max-width: 760px;
+  margin: 0 auto;
+  animation: fadeUp 0.3s ease both;
+}
+
+.q-meta {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.q-meta-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.chip-num {
+  background: rgba(79,142,255,0.10);
+  border: 1px solid rgba(79,142,255,0.25);
+  color: #1d4ed8;
+}
+
+.chip-marks {
+  background: rgba(5,150,105,0.10);
+  border: 1px solid rgba(5,150,105,0.22);
+  color: #047857;
+}
+
+.chip-neg {
+  background: rgba(220,38,38,0.08);
+  border: 1px solid rgba(220,38,38,0.2);
+  color: #b91c1c;
+}
+
+#question {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.65;
+  color: #0f172a;
+  margin-bottom: 28px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+#question::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; bottom: 20%;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--accent), var(--accent2));
+  border-radius: 0 3px 3px 0;
+}
+
+/* ─── OPTIONS ─── */
+.option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+.option::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(79,142,255,0) 0%, rgba(79,142,255,0) 100%);
+  transition: background 0.2s;
+}
+
+.option:hover {
+  border-color: var(--border2);
+  transform: translateX(4px);
+}
+
+.option.selected {
+  background: rgba(79,142,255,0.10);
+  border-color: rgba(79,142,255,0.45);
+}
+
+.option.selected::before {
+  background: linear-gradient(135deg, rgba(79,142,255,0.05), rgba(167,139,250,0.05));
+}
+
+.opt-label {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: var(--text2);
+  transition: all 0.2s;
+}
+
+.option.selected .opt-label {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  box-shadow: 0 4px 12px rgba(79,142,255,0.4);
+}
+
+.opt-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.5;
+  flex: 1;
+  color: #1e293b;
+  transition: color 0.2s;
+}
+
+.option.selected .opt-text { color: #1e40af; }
+
+/* ─── ACTION BAR ─── */
+#actionBar {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ─── RIGHT PANEL ─── */
+#right {
+  width: 280px;
+  flex-shrink: 0;
+  background: #f8fafd;
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#paletteTop {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #1e293b;
+}
+
+#paletteTop span {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-top: 2px;
+}
+
+/* ─── LEGEND ─── */
+.palette-legend {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legend-dot.attempted { background: var(--success); }
+.legend-dot.not { background: #e2e8f0; border: 1px solid var(--border2); }
+.legend-dot.review { background: var(--warning); }
+.legend-dot.current { background: var(--accent); }
+
+/* ─── PALETTE GRID ─── */
+#palette {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-content: flex-start;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+#palette::-webkit-scrollbar { width: 3px; }
+#palette::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+.palette-btn {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.palette-btn:hover { transform: scale(1.1); }
+
+.palette-btn.attempted {
+  background: rgba(5,150,105,0.10);
+  border-color: rgba(5,150,105,0.35);
+  color: var(--success);
+}
+
+.palette-btn.not {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text3);
+}
+
+.palette-btn.review {
+  background: rgba(217,119,6,0.10);
+  border-color: rgba(217,119,6,0.35);
+  color: var(--warning);
+}
+
+.palette-btn.active-q {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(79,142,255,0.4);
+  transform: scale(1.12);
+}
+
+/* ─── FILTER TABS ─── */
+#filterTabs {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 4px;
+}
+
+.filter-tab {
+  flex: 1;
+  padding: 6px 4px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  font-family: 'Sora', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+
+.filter-tab:hover { color: var(--text2); background: var(--surface2); }
+.filter-tab.active { background: rgba(79,142,255,0.15); color: var(--accent); }
+
+/* ─── PALETTE BOTTOM ─── */
+#paletteBottom {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ─── RESULT SCREEN ─── */
+#resultBox {
+  display: none;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  position: relative; z-index: 1;
+  flex-direction: column;
+}
+
+.result-card {
+  width: 100%;
+  max-width: 680px;
+  padding: 40px;
+  animation: fadeUp 0.6s ease both;
+}
+
+.result-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.score-display {
+  font-size: 4rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #2563eb;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.score-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  padding: 20px 16px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.stat-card.correct-card {
+  background: rgba(5,150,105,0.08);
+  border: 1px solid rgba(5,150,105,0.2);
+}
+
+.stat-card.wrong-card {
+  background: rgba(220,38,38,0.07);
+  border: 1px solid rgba(220,38,38,0.18);
+}
+
+.stat-card.skip-card {
+  background: rgba(217,119,6,0.08);
+  border: 1px solid rgba(217,119,6,0.22);
+}
+
+.stat-num {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-card.correct-card .stat-num { color: #059669; }
+.stat-card.wrong-card .stat-num { color: #dc2626; }
+.stat-card.skip-card .stat-num { color: #b45309; }
+
+.stat-lbl {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #334155;
+  font-weight: 700;
+}
+
+/* ─── ANALYSIS ─── */
+#analysis {
+  margin-top: 28px;
+}
+
+.analysis-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #1e293b;
+  padding: 16px 0 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ─── ANALYSIS SECTION DROPDOWN ─── */
+.analysis-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 0 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.analysis-top-bar-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #1e293b;
+  flex-shrink: 0;
+}
+
+.section-dropdown-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.section-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(79,142,255,0.28);
+  background: rgba(79,142,255,0.07);
+  color: #1d4ed8;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s;
+  user-select: none;
+}
+.section-dropdown-trigger:hover { background: rgba(79,142,255,0.13); }
+.section-dropdown-trigger svg { flex-shrink: 0; transition: transform 0.2s; }
+.section-dropdown-trigger.open svg.chevron { transform: rotate(180deg); }
+
+.section-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 220px;
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+  z-index: 50;
+  overflow: hidden;
+  padding: 6px;
+}
+.section-dropdown-menu.open { display: block; }
+
+.sd-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #334155;
+  transition: background 0.15s;
+  user-select: none;
+}
+.sd-item:hover { background: #f1f5f9; }
+.sd-item input[type="checkbox"] {
+  width: 15px; height: 15px;
+  accent-color: #1d4ed8;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sd-item-all { border-bottom: 1px solid rgba(0,0,0,0.07); margin-bottom: 4px; padding-bottom: 10px; font-weight: 700; color: #1e293b; }
+.analysis-filters {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.af-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid rgba(0,0,0,0.10);
+  transition: all 0.18s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.af-btn:hover { background: #e2e8f0; color: #1e293b; border-color: rgba(0,0,0,0.18); }
+
+/* Active states — colored only when selected */
+.af-btn.active-all {
+  background: rgba(79,142,255,0.12);
+  border-color: rgba(79,142,255,0.35);
+  color: #1d4ed8;
+}
+
+.af-btn.active-correct {
+  background: rgba(5,150,105,0.12);
+  border-color: rgba(5,150,105,0.38);
+  color: #047857;
+}
+
+.af-btn.active-wrong {
+  background: rgba(220,38,38,0.10);
+  border-color: rgba(220,38,38,0.35);
+  color: #b91c1c;
+}
+
+.af-btn.active-skipped {
+  background: rgba(217,119,6,0.12);
+  border-color: rgba(217,119,6,0.38);
+  color: #92400e;
+}
+
+/* ─── ANALYSIS ITEM LAYOUT ─── */
+.analysis-item {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.09);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.analysis-item:hover { border-color: rgba(0,0,0,0.18); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+.analysis-item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+}
+
+.analysis-qtext {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.5;
+  flex: 1;
+}
+
+/* ─── EYE BUTTON ─── */
+.eye-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(0,0,0,0.1);
+  background: #f8fafc;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.18s;
+}
+
+.eye-btn:hover {
+  background: rgba(79,142,255,0.08);
+  border-color: rgba(79,142,255,0.3);
+  color: #1d4ed8;
+}
+
+.eye-btn.open {
+  background: rgba(79,142,255,0.10);
+  border-color: rgba(79,142,255,0.35);
+  color: #1d4ed8;
+}
+
+/* ─── OPTIONS REVEAL ─── */
+.analysis-options {
+  display: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0,0,0,0.07);
+  flex-direction: column;
+  gap: 6px;
+}
+
+.analysis-options.visible { display: flex; }
+
+.ao-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  border: 1.5px solid transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  background: #f8fafc;
+}
+
+.ao-item.is-correct {
+  background: rgba(5,150,105,0.08);
+  border-color: rgba(5,150,105,0.25);
+  color: #047857;
+}
+
+.ao-item.is-wrong {
+  background: rgba(220,38,38,0.07);
+  border-color: rgba(220,38,38,0.22);
+  color: #b91c1c;
+}
+
+.ao-lbl {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ao-item.is-correct .ao-lbl { background: rgba(5,150,105,0.18); color: #047857; }
+.ao-item.is-wrong .ao-lbl { background: rgba(220,38,38,0.14); color: #b91c1c; }
+
+/* ─── ANSWERS SECTION ─── */
+.analysis-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.ans-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+.ans-row-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  white-space: nowrap;
+}
+
+.correct-label { background: rgba(5,150,105,0.13); color: #047857; border: 1px solid rgba(5,150,105,0.2); }
+.your-correct-label { background: rgba(5,150,105,0.13); color: #047857; border: 1px solid rgba(5,150,105,0.2); }
+.your-wrong-label { background: rgba(220,38,38,0.10); color: #b91c1c; border: 1px solid rgba(220,38,38,0.18); }
+.your-skip-label { background: rgba(217,119,6,0.10); color: #92400e; border: 1px solid rgba(217,119,6,0.2); }
+
+.ans-text-correct { color: #047857; font-weight: 700; line-height: 1.4; }
+.ans-text-wrong { color: #b91c1c; font-weight: 700; line-height: 1.4; }
+.ans-text-skip { color: #92400e; font-weight: 700; line-height: 1.4; }
+.ans-text { color: #334155; font-weight: 600; line-height: 1.4; }
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp {
+  from { opacity: 1; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeDown {
+  from { opacity: 1; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ─── PROGRESS BAR ─── */
+#progressBar {
+  height: 3px;
+  background: var(--surface2);
+  position: fixed;
+  top: 60px; left: 0; right: 0;
+  z-index: 99;
+}
+
+#progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.4s ease;
+}
+
+/* ─── SECTION TRANSITION MODAL ─── */
+#sectionModal {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(15,23,42,0.55);
+  backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+}
+
+#sectionModal.show { display: flex; }
+
+.section-modal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px 36px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  animation: fadeUp 0.3s ease both;
+}
+
+.section-modal-icon {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+}
+
+.section-modal-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.section-modal-sub {
+  font-size: 0.88rem;
+  color: var(--text2);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+/* ─── PALETTE SUBMIT BTN ─── */
+.btn-submit-palette {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 3px 14px rgba(220,38,38,0.28);
+  border: none;
+}
+.btn-submit-palette:hover {
+  box-shadow: 0 5px 20px rgba(220,38,38,0.4);
+  transform: translateY(-1px);
+}
+
+/* ─── SECTION ADVANCE BTN ─── */
+.btn-next-section {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 3px 14px rgba(124,58,237,0.28);
+  border: none;
+}
+.btn-next-section:hover {
+  box-shadow: 0 5px 20px rgba(124,58,237,0.4);
+  transform: translateY(-1px);
+}
+
+/* ─── RESULT EXTRA STATS ─── */
+.result-meta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.result-meta-card {
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  background: rgba(79,142,255,0.06);
+  border: 1px solid rgba(79,142,255,0.15);
+}
+
+.result-meta-num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1d4ed8;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.result-meta-lbl {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #334155;
+}
+
+/* ─── FULL SCREEN BTN ─── */
+.fs-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ─── GUIDE MODAL ─── */
+#guideModal {
+  display: none;
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(15,23,42,0.6);
+  backdrop-filter: blur(8px);
+  align-items: flex-start;
+  justify-content: center;
+  padding: 32px 16px;
+  overflow-y: auto;
+}
+#guideModal.show { display: flex; }
+
+.guide-card {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.09);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 680px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+  overflow: hidden;
+  position: relative;
+  margin: auto;
+}
+
+.guide-header {
+  background: linear-gradient(135deg, #1e3a8a, #4f8eff);
+  padding: 28px 32px 24px;
+  color: white;
+  position: relative;
+}
+.guide-header h2 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.guide-header p { font-size: 0.85rem; opacity: 0.85; font-weight: 500; }
+
+.guide-close {
+  position: absolute; top: 20px; right: 20px;
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(255,255,255,0.15); border: none;
+  color: white; font-size: 1.1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.guide-close:hover { background: rgba(255,255,255,0.28); }
+
+.guide-body { padding: 28px 32px; }
+
+.guide-section { margin-bottom: 28px; }
+
+.guide-section-title {
+  font-size: 0.72rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: #1d4ed8; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 7px;
+}
+.guide-section-title::before {
+  content: ''; display: inline-block;
+  width: 3px; height: 14px;
+  background: #1d4ed8; border-radius: 2px;
+}
+
+.guide-text {
+  font-size: 0.88rem; color: #334155;
+  font-weight: 500; line-height: 1.65; margin-bottom: 10px;
+}
+
+.col-table {
+  width: 100%; border-collapse: collapse;
+  border-radius: 10px; overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.08); margin-bottom: 10px; font-size: 0.82rem;
+}
+.col-table th {
+  background: #f1f5f9; padding: 9px 12px; text-align: left;
+  font-weight: 700; color: #1e293b; font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.col-table td {
+  padding: 9px 12px; border-bottom: 1px solid rgba(0,0,0,0.05);
+  color: #334155; font-weight: 500; vertical-align: top;
+}
+.col-table tr:last-child td { border-bottom: none; }
+.col-table tr:nth-child(even) td { background: #f8fafc; }
+
+.col-tag {
+  display: inline-block;
+  background: rgba(79,142,255,0.10); color: #1d4ed8;
+  border: 1px solid rgba(79,142,255,0.22);
+  border-radius: 4px; padding: 1px 7px;
+  font-size: 0.72rem; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.col-tag.green {
+  background: rgba(5,150,105,0.10); color: #047857;
+  border-color: rgba(5,150,105,0.22);
+}
+.col-tag.amber {
+  background: rgba(217,119,6,0.10); color: #92400e;
+  border-color: rgba(217,119,6,0.22);
+}
+
+.sample-row {
+  background: #f8fafc; border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 8px; padding: 12px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem; color: #334155; line-height: 1.7;
+  margin-bottom: 10px; white-space: pre-wrap; overflow-x: auto;
+}
+
+.prompt-box {
+  background: linear-gradient(135deg, #f0f4ff, #e8f0ff);
+  border: 1.5px solid rgba(79,142,255,0.25);
+  border-radius: 10px; padding: 16px 18px; margin-bottom: 10px;
+}
+.prompt-box-label {
+  font-size: 0.68rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: #1d4ed8; margin-bottom: 8px;
+}
+.prompt-text {
+  font-size: 0.83rem; color: #1e293b;
+  font-weight: 500; line-height: 1.65; font-style: italic;
+}
+
+.claude-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: white; border-radius: 6px; padding: 3px 10px;
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.02em;
+  margin-bottom: 12px;
+}
+
+.guide-footer {
+  padding: 20px 32px 24px;
+  border-top: 1px solid rgba(0,0,0,0.07);
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+
+.how-to-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px;
+  background: rgba(79,142,255,0.08);
+  border: 1.5px solid rgba(79,142,255,0.22);
+  color: #1d4ed8; font-family: 'Sora', sans-serif;
+  font-size: 0.78rem; font-weight: 700; cursor: pointer;
+  transition: all 0.18s; margin-bottom: 14px;
+}
+.how-to-btn:hover { background: rgba(79,142,255,0.14); border-color: rgba(79,142,255,0.38); }
+
+/* ─── INSTRUCTIONS SCREEN ─── */
+#instructionsBox {
+  display: none;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  position: relative; z-index: 1;
+  flex-direction: column;
+}
+
+.instructions-card {
+  width: 100%;
+  max-width: 620px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.instructions-header {
+  background: linear-gradient(135deg, #1e3a8a, #4f8eff);
+  padding: 28px 32px 24px;
+  color: white;
+  text-align: center;
+}
+.instructions-header h2 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; }
+.instructions-header p { font-size: 0.85rem; opacity: 0.85; font-weight: 500; }
+
+.instructions-body { padding: 28px 32px; }
+
+.instruction-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.instruction-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 0.9rem; font-weight: 600; color: #1e293b; line-height: 1.5; }
+
+.instr-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: rgba(79,142,255,0.10); border: 1px solid rgba(79,142,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 0.9rem;
+}
+
+.fullscreen-notice {
+  background: rgba(217,119,6,0.08);
+  border: 1.5px solid rgba(217,119,6,0.25);
+  border-radius: 10px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+}
+.fullscreen-notice-text { font-size: 0.85rem; font-weight: 700; color: #92400e; line-height: 1.4; }
+
+#fsStatusDot { width: 10px; height: 10px; border-radius: 50%; background: #dc2626; flex-shrink: 0; transition: background 0.3s; }
+#fsStatusDot.active { background: #059669; }
+#fsStatusLabel { font-size: 0.78rem; font-weight: 700; color: #dc2626; transition: color 0.3s; }
+#fsStatusLabel.active { color: #059669; }
+
+#startTestBtn { opacity: 0.42; pointer-events: none; transition: opacity 0.3s; }
+#startTestBtn.ready { opacity: 1; pointer-events: all; }
+
+/* ─── CUSTOM CONFIRM MODAL ─── */
+#confirmModal {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(15,23,42,0.45);
+  backdrop-filter: blur(3px);
+  align-items: center; justify-content: center;
+}
+#confirmModal.show { display: flex; }
+
+.confirm-card {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 16px;
+  padding: 32px 28px;
+  max-width: 400px; width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.14);
+}
+.confirm-icon { font-size: 2rem; margin-bottom: 12px; }
+.confirm-title { font-size: 1.1rem; font-weight: 800; color: #0f172a; margin-bottom: 8px; letter-spacing: -0.02em; }
+.confirm-sub { font-size: 0.85rem; color: #475569; font-weight: 500; line-height: 1.55; margin-bottom: 24px; }
+.confirm-btns { display: flex; gap: 10px; }
+.confirm-btns .btn { flex: 1; justify-content: center; }
+
+/* ─── SECTION BREAKDOWN IN INSTRUCTIONS ─── */
+.section-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.sec-info-card {
+  background: #f8fafc;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sec-info-name {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sec-info-name::before {
+  content: '';
+  width: 3px; height: 14px;
+  background: #4f8eff;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.sec-info-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sec-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.sec-pill-time { background: rgba(79,142,255,0.10); color: #1d4ed8; border: 1px solid rgba(79,142,255,0.22); }
+.sec-pill-q    { background: rgba(71,85,105,0.08); color: #334155; border: 1px solid rgba(71,85,105,0.15); }
+.sec-pill-mark { background: rgba(5,150,105,0.10); color: #047857; border: 1px solid rgba(5,150,105,0.2); }
+.sec-pill-neg  { background: rgba(220,38,38,0.08); color: #b91c1c; border: 1px solid rgba(220,38,38,0.18); }
+
+/* ─── SAVED TESTS PANEL ─── */
+.saved-section {
+  margin-top: 24px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+
+.saved-section-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #1e293b;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.saved-test-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.saved-test-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px;
+  transition: all 0.18s;
+}
+
+.saved-test-item:hover { background: #f1f5f9; border-color: rgba(0,0,0,0.14); }
+
+.saved-test-info { flex: 1; min-width: 0; }
+
+.saved-test-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.saved-test-meta {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.saved-test-btns { display: flex; gap: 6px; flex-shrink: 0; }
+
+.btn-load-test {
+  padding: 5px 12px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border-radius: 7px;
+  background: rgba(79,142,255,0.10);
+  border: 1px solid rgba(79,142,255,0.25);
+  color: #1d4ed8;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: 'Sora', sans-serif;
+}
+.btn-load-test:hover { background: rgba(79,142,255,0.18); }
+
+.btn-del-test {
+  padding: 5px 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border-radius: 7px;
+  background: rgba(220,38,38,0.07);
+  border: 1px solid rgba(220,38,38,0.2);
+  color: #b91c1c;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: 'Sora', sans-serif;
+}
+.btn-del-test:hover { background: rgba(220,38,38,0.15); }
+
+.no-saved {
+  text-align: center;
+  padding: 18px;
+  font-size: 0.83rem;
+  color: #94a3b8;
+  font-weight: 600;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px dashed rgba(0,0,0,0.10);
+}
+
+/* ─── SECTION BREAKDOWN IN INSTRUCTIONS ─── */
+.section-breakdown { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+
+.sec-info-card { background: #f8fafc; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 14px 16px; }
+
+.sec-info-name { font-size: 0.88rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+
+.sec-info-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.sec-pill { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+.sec-pill-time  { background: rgba(79,142,255,0.10); border: 1px solid rgba(79,142,255,0.22); color: #1d4ed8; }
+.sec-pill-q     { background: rgba(71,85,105,0.08);  border: 1px solid rgba(71,85,105,0.18);  color: #334155; }
+.sec-pill-marks { background: rgba(5,150,105,0.10);  border: 1px solid rgba(5,150,105,0.22);  color: #047857; }
+.sec-pill-neg   { background: rgba(220,38,38,0.08);  border: 1px solid rgba(220,38,38,0.18);  color: #b91c1c; }
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — covers mobile, tablet, laptop, desktop
+   Breakpoints: 480 · 640 · 768 · 1024 · 1280
+   ══════════════════════════════════════════════════════ */
+
+/* ── Large desktop (1280+): no changes, base styles are for this ── */
+
+/* ── Standard laptop / small desktop (1024–1279) ── */
+@media (max-width: 1279px) {
+  #right { width: 260px; }
+  .result-card { max-width: 620px; }
+  #questionCard { max-width: 100%; }
+}
+
+/* ── Tablet landscape / small laptop (768–1023) ── */
+@media (max-width: 1023px) {
+  #right { width: 240px; }
+  #left { padding: 24px 18px; }
+  .setup-card { padding: 28px 24px; }
+  .result-card { padding: 28px 24px; }
+  .guide-body { padding: 22px 24px; }
+  .instructions-body { padding: 22px 24px; }
+  .brand h1 { font-size: 1.9rem; }
+  #question { font-size: 1rem; padding: 18px; }
+  .analysis-top-bar { gap: 8px; }
+  .analysis-filters { gap: 4px; }
+  .af-btn { padding: 4px 9px; font-size: 0.68rem; }
+}
+
+/* ── Tablet portrait (640–767) ── */
+@media (max-width: 767px) {
+  /* Topbar */
+  #examTopBar { padding: 0 14px; gap: 10px; height: 54px; }
+  .topbar-brand { font-size: 0.88rem; }
+  #sectionPill { font-size: 0.72rem; padding: 4px 10px; }
+  #timer { font-size: 0.78rem; padding: 4px 10px; gap: 5px; }
+  #progressBar { top: 54px; }
+  #examBody { padding-top: 54px; }
+
+  /* Exam layout — stack right panel below */
+  #examBody { flex-direction: column; }
+  #right {
+    width: 100%;
+    height: auto;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    flex-direction: column;
+  }
+  #palette {
+    max-height: 130px;
+    padding: 10px 14px;
+  }
+  .palette-legend { flex-direction: row; flex-wrap: wrap; gap: 8px 16px; padding: 10px 14px; }
+  #filterTabs { padding: 8px 12px; }
+  #paletteBottom { flex-direction: row; gap: 8px; padding: 10px 14px; }
+  #paletteBottom .btn { flex: 1; }
+
+  /* Left panel */
+  #left { padding: 16px 14px; overflow-y: auto; }
+  #question { font-size: 0.95rem; padding: 16px; }
+  .opt-text { font-size: 0.88rem; }
+  .opt-label { width: 28px; height: 28px; font-size: 0.75rem; }
+  #actionBar { flex-wrap: wrap; gap: 8px; }
+  #actionBar .btn { font-size: 0.8rem; padding: 8px 14px; }
+  #sectionAdvanceBtn { width: 100%; }
+  #sectionAdvanceBtn .btn { width: 100%; justify-content: center; }
+
+  /* Setup */
+  .setup-card { padding: 22px 18px; }
+  .brand h1 { font-size: 1.7rem; }
+  .brand p { font-size: 0.85rem; }
+  .field-label { font-size: 0.72rem; }
+  input[type="number"], input[type="text"], input[type="file"] { font-size: 0.88rem; padding: 10px 14px; }
+
+  /* Result */
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .result-meta-row { grid-template-columns: 1fr 1fr; }
+  .score-display { font-size: 3rem; }
+  .result-card { padding: 24px 18px; }
+
+  /* Instructions */
+  .instructions-header { padding: 22px 20px 18px; }
+  .instructions-body { padding: 18px 18px; }
+  .instruction-list li { font-size: 0.85rem; }
+
+  /* Guide modal */
+  .guide-body { padding: 18px 18px; }
+  .guide-header { padding: 20px 20px 16px; }
+  .guide-footer { padding: 14px 18px 18px; }
+  .col-table { font-size: 0.75rem; }
+  .col-table th, .col-table td { padding: 7px 8px; }
+
+  /* Analysis */
+  .analysis-section-title { flex-wrap: wrap; gap: 8px; }
+  .analysis-filters { margin-left: 0 !important; width: 100%; justify-content: flex-start; }
+  .analysis-top-bar { flex-wrap: wrap; }
+  .section-dropdown-trigger { font-size: 0.78rem; padding: 6px 11px; }
+}
+
+/* ── Mobile large (480–639) ── */
+@media (max-width: 639px) {
+  /* Topbar: hide brand text on very small screens, keep logo only */
+  .topbar-brand { font-size: 0.82rem; }
+  #sectionPill { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #timer { font-size: 0.75rem; padding: 4px 8px; }
+
+  /* Stats */
+  .stats-row { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .stat-num { font-size: 1.7rem; }
+  .stat-lbl { font-size: 0.62rem; }
+  .score-display { font-size: 2.5rem; }
+
+  /* Form grid — marks/neg side by side still fine */
+  .time-row { gap: 4px; }
+  .time-sep { font-size: 1rem; }
+
+  /* Buttons row wraps nicely */
+  .btn-row-between { flex-direction: column; gap: 8px; }
+  .btn-row-between > div { width: 100%; }
+  .btn-row-between .btn-success { width: 100%; justify-content: center; }
+
+  /* Action bar */
+  #actionBar { margin-top: 20px; }
+
+  /* Result buttons */
+  #resultBox > .glass > div[style] .btn { font-size: 0.82rem; padding: 10px 12px; }
+
+  /* Section heading with filters wraps cleanly */
+  .analysis-section-title { padding: 12px 0 8px; }
+  .af-btn { font-size: 0.65rem; padding: 3px 7px; }
+}
+
+/* ── Mobile small (≤479px) ── */
+@media (max-width: 479px) {
+  body { font-size: 14px; }
+
+  /* Topbar ultra compact */
+  #examTopBar { height: 50px; padding: 0 10px; gap: 6px; }
+  #progressBar { top: 50px; }
+  #examBody { padding-top: 50px; }
+  .topbar-brand { display: none; } /* hide brand text, save space */
+  #sectionPill { font-size: 0.7rem; padding: 3px 9px; max-width: 110px; }
+  #timer { font-size: 0.72rem; padding: 3px 8px; }
+
+  /* Setup */
+  #setup { padding: 24px 14px; }
+  .brand-logo { width: 46px; height: 46px; font-size: 22px; }
+  .brand h1 { font-size: 1.5rem; }
+  .setup-card { padding: 18px 14px; }
+  .brand { margin-bottom: 24px; }
+
+  /* Grid overrides */
+  div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+
+  /* Stats row: 3 per row on small screen */
+  .stats-row { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .stat-num { font-size: 1.5rem; }
+  .stat-lbl { font-size: 0.6rem; letter-spacing: 0; }
+  .result-meta-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .result-meta-num { font-size: 1.2rem; }
+  .score-display { font-size: 2.2rem; }
+  .result-card { padding: 20px 14px; }
+  .score-label { font-size: 0.72rem; }
+
+  /* Questions */
+  #question { font-size: 0.9rem; padding: 14px; }
+  .option { padding: 11px 12px; gap: 10px; }
+  .opt-text { font-size: 0.85rem; }
+  .opt-label { width: 26px; height: 26px; font-size: 0.72rem; border-radius: 6px; }
+
+  /* Palette */
+  #palette { max-height: 100px; }
+  .palette-btn { width: 30px; height: 30px; font-size: 0.7rem; border-radius: 6px; }
+  #paletteTop { padding: 12px 14px; font-size: 0.7rem; }
+  #paletteTop span { font-size: 0.85rem; }
+  .legend-item { font-size: 0.65rem; }
+  #filterTabs { padding: 6px 10px; }
+  .filter-tab { font-size: 0.6rem; padding: 5px 2px; }
+
+  /* Action buttons */
+  .btn { font-size: 0.78rem; padding: 9px 12px; }
+  #actionBar { gap: 6px; margin-top: 16px; }
+
+  /* Instructions */
+  .instructions-header h2 { font-size: 1.1rem; }
+  .instruction-list li { font-size: 0.8rem; gap: 9px; }
+  .instr-icon { width: 26px; height: 26px; font-size: 0.8rem; }
+  .fullscreen-notice { padding: 10px 12px; gap: 8px; }
+  .fullscreen-notice-text { font-size: 0.78rem; }
+
+  /* Guide */
+  .guide-header h2 { font-size: 1.1rem; }
+  .guide-text { font-size: 0.82rem; }
+  .prompt-text { font-size: 0.78rem; }
+  .sample-row { font-size: 0.7rem; }
+
+  /* Analysis */
+  .analysis-qtext { font-size: 0.85rem; }
+  .ans-row-label { font-size: 0.62rem; padding: 2px 7px; }
+  .ans-text-correct, .ans-text-wrong, .ans-text-skip, .ans-text { font-size: 0.82rem; }
+  .ao-item { font-size: 0.8rem; padding: 7px 10px; }
+  .ao-lbl { width: 22px; height: 22px; font-size: 0.68rem; border-radius: 5px; }
+  .eye-btn { width: 28px; height: 28px; }
+
+  /* Confirm / save modals */
+  .confirm-card { padding: 24px 18px; }
+  .confirm-title { font-size: 1rem; }
+  .confirm-sub { font-size: 0.8rem; }
+  .section-modal-card { padding: 28px 20px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ══════════════════════════════════════ INSTRUCTIONS ══════════════════════════════════════ -->
+<div id="instructionsBox">
+  <div class="instructions-card">
+    <div class="instructions-header" style="position:relative;">
+      <button onclick="goBackToSetup()" style="position:absolute;top:16px;left:16px;background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.35);border-radius:8px;color:white;padding:6px 13px;font-family:'Sora',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Back
+      </button>
+      <div style="font-size:2rem;margin-bottom:8px;">📋</div>
+      <h2 id="instrTestTitle">Test Instructions</h2>
+      <p id="instrTestMeta">Read carefully before beginning</p>
+    </div>
+    <div class="instructions-body">
+      <!-- Section-by-section breakdown (filled dynamically) -->
+      <div id="instrSectionBreakdown" class="section-breakdown"></div>
+
+      <!-- General rules -->
+      <ul class="instruction-list" id="instrGeneralList">
+        <li><div class="instr-icon">✅</div><span>Questions marked with <strong>✦ Multi-Answer</strong> require you to select ALL correct options. Selecting only some will be marked wrong.</span></li>
+        <li><div class="instr-icon">⭐</div><span>Use the <strong>Review</strong> button to flag questions you want to revisit before submitting.</span></li>
+        <li><div class="instr-icon">👁️</div><span>You can navigate freely within a section using the Question Navigator on the right.</span></li>
+        <li><div class="instr-icon">⚠️</div><span>Questions with missing Excel data (marked in amber) will not be counted in your score.</span></li>
+        <li><div class="instr-icon">🔒</div><span>The test must be taken in <strong>Full Screen</strong> mode. Exiting full screen during the test is not recommended.</span></li>
+      </ul>
+
+      <div class="fullscreen-notice">
+        <div id="fsStatusDot"></div>
+        <div class="fullscreen-notice-text">
+          Full Screen is required to begin.<br>
+          <span id="fsStatusLabel">Not in Full Screen — please click the button below</span>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost" onclick="enterFullScreenForTest()" style="width:100%;justify-content:center;margin-bottom:12px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        Enter Full Screen
+      </button>
+
+      <button class="btn btn-success" id="startTestBtn" onclick="launchTestFromInstructions()" style="width:100%;justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Start Test
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ CUSTOM CONFIRM MODAL ══════════════════════════════════════ -->
+<div id="confirmModal">
+  <div class="confirm-card">
+    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <div class="confirm-title" id="confirmTitle">Are you sure?</div>
+    <div class="confirm-sub" id="confirmSub">This action cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirmOkBtn" onclick="confirmOkAction()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ SAVE NAME MODAL ══════════════════════════════════════ -->
+<div id="saveNameModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(15,23,42,0.45);backdrop-filter:blur(3px);align-items:center;justify-content:center;">
+  <div class="confirm-card" style="max-width:440px;">
+    <div class="confirm-icon">💾</div>
+    <div class="confirm-title">Save This Test</div>
+    <div class="confirm-sub">Give your test a name so you can load it again later.</div>
+    <input id="saveNameInput" type="text" placeholder="e.g. Geography Quiz — Set 1" style="width:100%;margin-bottom:16px;font-size:0.92rem;font-weight:600;">
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" onclick="document.getElementById('saveNameModal').style.display='none'">Cancel</button>
+      <button class="btn btn-success" onclick="confirmSaveTest()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+        Save Test
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ FULLSCREEN WARNING MODAL ══════════════════════════════════════ -->
+<div id="fsWarningModal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(15,23,42,0.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div class="confirm-card" style="max-width:420px;border-top:4px solid #dc2626;">
+    <div class="confirm-icon">🚫</div>
+    <div class="confirm-title" style="color:#dc2626;">Full Screen Exited!</div>
+    <div class="confirm-sub" id="fsWarningMsg">You have exited full screen mode. The test requires full screen to continue.</div>
+    <div style="background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.2);border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:0.82rem;font-weight:700;color:#b91c1c;" id="fsViolationCount">
+      Warning 1 of 3 — After 3 violations the test will be auto-submitted.
+    </div>
+    <button class="btn btn-primary" onclick="reEnterFullScreen()" style="width:100%;justify-content:center;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      Return to Full Screen
+    </button>
+  </div>
+</div>
+<div id="setup">
+  <div class="brand">
+    <div class="brand-logo">⚡</div>
+    <h1>ExamForge</h1>
+    <p>Professional exam builder & test platform</p>
+  </div>
+
+  <div class="glass setup-card" id="setupCard">
+    <div class="field-group">
+      <label class="field-label">Number of Sections</label>
+      <input id="sectionCount" type="number" value="1" min="1" placeholder="Enter section count">
+    </div>
+    <button class="btn btn-primary" onclick="initSections()" style="width:100%;justify-content:center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      Build Sections
+    </button>
+
+    <div id="form" style="margin-top: 28px;"></div>
+
+    <!-- Saved Tests -->
+    <div class="saved-section" id="savedTestsSection">
+      <div class="saved-section-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Saved Tests
+      </div>
+      <div class="saved-test-list" id="savedTestList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ EXAM ══════════════════════════════════════ -->
+<div id="examLayout">
+  <!-- Top Bar -->
+  <div id="examTopBar">
+    <div class="topbar-brand">⚡ ExamForge</div>
+    <div id="sectionPill">Section</div>
+    <div style="flex:1"></div>
+    <div id="timer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      00:30:00
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div id="progressBar"><div id="progressFill" style="width:0%"></div></div>
+
+  <!-- Body -->
+  <div id="examBody">
+    <div id="left">
+      <div id="questionCard">
+        <div class="q-meta" id="qMeta"></div>
+        <div id="question"></div>
+        <div id="options"></div>
+        <div id="actionBar">
+          <button class="btn btn-ghost" onclick="loadQ(current > 0 ? current - 1 : current)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+            Prev
+          </button>
+          <button id="nextBtn" class="btn btn-ghost" onclick="nextQ()">
+            Next
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <button class="btn btn-warning" onclick="markReview()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Review
+          </button>
+          <div id="sectionAdvanceBtn" style="display:none;margin-left:auto;">
+            <button class="btn btn-next-section" onclick="confirmSectionAdvance()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              Submit &amp; Go To Next Section
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="right">
+      <div id="paletteTop">
+        Question Navigator
+        <span id="paletteSectionName"></span>
+      </div>
+
+      <div class="palette-legend">
+        <div class="legend-item"><div class="legend-dot current"></div> Current</div>
+        <div class="legend-item"><div class="legend-dot attempted"></div> Attempted</div>
+        <div class="legend-item"><div class="legend-dot not"></div> Unattempted</div>
+        <div class="legend-item"><div class="legend-dot review"></div> For Review</div>
+      </div>
+
+      <div id="filterTabs">
+        <button class="filter-tab active" onclick="setFilter('all', this)">All</button>
+        <button class="filter-tab" onclick="setFilter('attempted', this)">Done</button>
+        <button class="filter-tab" onclick="setFilter('not', this)">Skip</button>
+        <button class="filter-tab" onclick="setFilter('review', this)">Review</button>
+      </div>
+
+      <div id="palette"></div>
+
+      <div id="paletteBottom">
+        <button class="btn btn-submit-palette" style="width:100%;justify-content:center;" onclick="confirmSubmit()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Submit The Test
+        </button>
+        <button class="btn btn-ghost fs-btn" style="width:100%;justify-content:center;" onclick="goFullScreen()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Full Screen
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ RESULT ══════════════════════════════════════ -->
+<div id="resultBox" style="display:none;min-height:100vh;display:none;align-items:center;justify-content:center;padding:40px 20px;position:relative;z-index:1;flex-direction:column;">
+  <div class="glass result-card">
+    <div class="result-header">
+      <div style="font-size:2.5rem;margin-bottom:8px;">🎯</div>
+      <div class="score-display" id="scoreDisplay">0</div>
+      <div class="score-label">Final Score</div>
+    </div>
+
+    <div class="result-meta-row">
+      <div class="result-meta-card">
+        <div class="result-meta-num" id="statMaxMarks">0</div>
+        <div class="result-meta-lbl">Maximum Marks</div>
+      </div>
+      <div class="result-meta-card">
+        <div class="result-meta-num" id="statPercent">0%</div>
+        <div class="result-meta-lbl">Percentage</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card correct-card">
+        <div class="stat-num" id="statCorrect">0</div>
+        <div class="stat-lbl">Correct</div>
+      </div>
+      <div class="stat-card wrong-card">
+        <div class="stat-num" id="statWrong">0</div>
+        <div class="stat-lbl">Wrong</div>
+      </div>
+      <div class="stat-card skip-card">
+        <div class="stat-num" id="statSkip">0</div>
+        <div class="stat-lbl">Skipped</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="showAnalysis()" style="flex:1;justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        View Analysis
+      </button>
+      <button class="btn btn-ghost" onclick="restartTest()" style="flex:1;justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Restart
+      </button>
+      <button class="btn btn-ghost" onclick="goHome()" style="flex:1;justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Home
+      </button>
+    </div>
+    <button class="btn btn-ghost" id="exitFsBtn" onclick="exitFullScreen()" style="width:100%;justify-content:center;margin-top:10px;display:none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 0 2-2h3M3 16h3a2 2 0 0 0 2 2v3"/></svg>
+      Exit Full Screen
+    </button>
+
+    <div id="analysis"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ GUIDE MODAL ══════════════════════════════════════ -->
+<div id="guideModal">
+  <div class="guide-card">
+    <div class="guide-header">
+      <button class="guide-close" onclick="closeGuide()">✕</button>
+      <h2>📋 How to Create a Test</h2>
+      <p>Complete guide to building your exam using Excel upload</p>
+    </div>
+
+    <div class="guide-body">
+
+      <!-- SECTION 1: Excel Format -->
+      <div class="guide-section">
+        <div class="guide-section-title">Step 1 — Excel Column Format</div>
+        <p class="guide-text">Create an Excel file (.xlsx) with exactly these column headers in Row 1:</p>
+        <table class="col-table">
+          <tr><th>Column</th><th>Description</th><th>Example</th></tr>
+          <tr><td><span class="col-tag">QUESTIONS</span></td><td>The full question text</td><td>What is the capital of India?</td></tr>
+          <tr><td><span class="col-tag">A</span></td><td>Option A text</td><td>Mumbai</td></tr>
+          <tr><td><span class="col-tag">B</span></td><td>Option B text</td><td>New Delhi</td></tr>
+          <tr><td><span class="col-tag">C</span></td><td>Option C text</td><td>Chennai</td></tr>
+          <tr><td><span class="col-tag">D</span></td><td>Option D text</td><td>Kolkata</td></tr>
+          <tr><td><span class="col-tag green">CORRECT ANSWER</span></td><td>Letter(s) of correct option(s). For multiple correct answers, separate with comma.</td><td><code>B</code> or <code>B,C</code></td></tr>
+          <tr><td><span class="col-tag">MAXIMUM MARKS</span></td><td>Marks awarded for correct answer (optional — uses section default if blank)</td><td>2</td></tr>
+          <tr><td><span class="col-tag">NEGATIVE MARKING</span></td><td>Marks deducted for wrong answer (optional — uses section default if blank)</td><td>0.5</td></tr>
+        </table>
+      </div>
+
+      <!-- SECTION 2: Multiple correct answers -->
+      <div class="guide-section">
+        <div class="guide-section-title">Step 2 — Single vs Multiple Correct Answers</div>
+        <p class="guide-text">For a question with <strong>one correct answer</strong>, put just the letter in CORRECT ANSWER:</p>
+        <div class="sample-row">CORRECT ANSWER → <span style="color:#047857;font-weight:700;">B</span></div>
+        <p class="guide-text">For a question with <strong>two or more correct answers</strong>, separate them with a comma. The student must select ALL correct options to get marks — selecting only one will count as wrong:</p>
+        <div class="sample-row">CORRECT ANSWER → <span style="color:#047857;font-weight:700;">B,C</span>   (student must pick both B and C)</div>
+        <p class="guide-text" style="color:#92400e;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.2);border-radius:8px;padding:10px 12px;">⚠️ Multi-answer questions automatically allow selecting multiple options during the test. Single-answer questions lock to one choice.</p>
+      </div>
+
+      <!-- SECTION 3: Sample data -->
+      <div class="guide-section">
+        <div class="guide-section-title">Step 3 — Sample Excel Data</div>
+        <p class="guide-text">Your Excel should look like this (Row 1 = headers, Row 2 onwards = questions):</p>
+        <div class="sample-row">QUESTIONS          | A       | B          | C       | D       | CORRECT ANSWER | MAXIMUM MARKS | NEGATIVE MARKING
+Capital of India?  | Mumbai  | New Delhi  | Chennai | Kolkata | B              | 2             | 0.5
+Planets in solar…  | 7       | 8          | 9       | 10      | B              | 2             | 0.5
+Primary colours?   | Red     | Blue       | Green   | Yellow  | A,B,C          | 3             | 0</div>
+        <button class="btn btn-primary" onclick="downloadSampleExcel()" style="width:100%;justify-content:center;margin-top:4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Sample Excel
+        </button>
+      </div>
+
+      <!-- SECTION 4: Claude AI shortcut -->
+      <div class="guide-section">
+        <div class="guide-section-title">Step 4 — Already Have a PDF or Word File of Questions?</div>
+        <div class="claude-badge">✨ Powered by Claude AI</div>
+        <p class="guide-text">If you have a question paper as a <strong>PDF or Word document</strong>, you don't need to type everything out manually. Just use <strong>Claude AI</strong> to convert it into the exact Excel format in seconds!</p>
+        <p class="guide-text"><strong>Here's what to do:</strong></p>
+        <p class="guide-text">1. Go to <strong>claude.ai</strong> &nbsp;→&nbsp; Start a new conversation<br>2. Upload your PDF or Word file<br>3. Paste this prompt:</p>
+        <div class="prompt-box">
+          <div class="prompt-box-label">📋 Copy this prompt</div>
+          <div class="prompt-text">"I have a question paper attached. Please convert all the questions and their options into an Excel file with exactly these columns in this order: QUESTIONS, A, B, C, D, CORRECT ANSWER, MAXIMUM MARKS, NEGATIVE MARKING. Put each question in a separate row. For CORRECT ANSWER, use the letter(s) of the correct option (e.g. B, or B,C for multiple correct answers). For MAXIMUM MARKS put 2 and for NEGATIVE MARKING put 0.5 unless the paper specifies otherwise. Give me the Excel file as a downloadable attachment."</div>
+        </div>
+        <p class="guide-text">Claude will read your document and output a ready-to-upload Excel file — no manual work needed! 🎉</p>
+      </div>
+
+    </div>
+
+    <div class="guide-footer">
+      <button class="btn btn-primary" onclick="downloadSampleExcel()" style="flex:1;justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Sample Excel
+      </button>
+      <button class="btn btn-ghost" onclick="closeGuide()" style="flex:1;justify-content:center;">Got it, Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ SECTION MODAL ══════════════════════════════════════ -->
+<div id="sectionModal">
+  <div class="section-modal-card">
+    <div class="section-modal-icon">⏱️</div>
+    <div class="section-modal-title" id="modalTitle">Section Time Up!</div>
+    <div class="section-modal-sub" id="modalSub">Time for this section has ended. Proceed to the next section.</div>
+    <button class="btn btn-primary" onclick="proceedToNextSection()" style="width:100%;justify-content:center;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      <span id="modalBtnText">Start Next Section</span>
+    </button>
+  </div>
+</div>
+
+<script>
+let sectionData=[],questions=[],answers=[],userAnswers=[],reviewMark=[],sectionMap=[];
+let current=0,index=0,total=0,filter="all";
+let timeLeft=0,timerInterval;
+let currentSection=0; // which section is active during the test
+
+/* ─── INIT ─── */
+function initSections(){
+  total=parseInt(document.getElementById("sectionCount").value);
+  if(isNaN(total)||total<=0){alert("Enter valid section count");return;}
+  sectionData=new Array(total).fill(null).map(()=>({
+    name:"", questions:[], marks:"", neg:"", h:"", m:"", s:"", excelName:""
+  }));
+  index=0;
+  renderForm();
+}
+
+function renderForm(){
+  let s=sectionData[index];
+  document.getElementById("form").innerHTML=`
+    <div class="section-badge">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 6h16M4 12h16M4 18h8"/></svg>
+      Section ${index+1} of ${total}
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Section Name</label>
+      <input id="name" type="text" placeholder="e.g. Quantitative Aptitude" value="${escHtml(s.name)}">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="field-group">
+      <div>
+        <label class="field-label">Marks Per Question</label>
+        <input id="marks" type="number" placeholder="e.g. 2" step="0.5" value="${s.marks}">
+      </div>
+      <div>
+        <label class="field-label">Negative Marking</label>
+        <input id="neg" type="number" placeholder="e.g. 0.5" step="0.25" value="${s.neg}">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Section Duration</label>
+      <div class="time-row">
+        <input id="h" placeholder="HH" size="3" value="${s.h}" type="number" min="0">
+        <span class="time-sep">:</span>
+        <input id="m" placeholder="MM" size="3" value="${s.m}" type="number" min="0" max="59">
+        <span class="time-sep">:</span>
+        <input id="s_inp" placeholder="SS" size="3" value="${s.s}" type="number" min="0" max="59">
+      </div>
+    </div>
+
+    <div class="divider-label"><span>Upload Excel</span></div>
+
+    <div class="field-group">
+      <button class="how-to-btn" type="button" onclick="openGuide()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        How to Create a Test using Excel
+      </button>
+      <label class="field-label">Excel File (.xlsx)</label>
+      <input type="file" id="excelFile" accept=".xlsx,.csv" onchange="handleExcel(event)">
+      ${s.excelName ? `<div class="hint" style="color:var(--success);margin-top:6px;font-weight:700;">✅ Loaded: ${escHtml(s.excelName)} (${s.questions.length} questions)</div>` : ''}
+    </div>
+
+    <div class="btn-row btn-row-between" style="margin-top:20px;">
+      <div style="display:flex;gap:8px;">
+        ${index>0?`<button class="btn btn-ghost" onclick="prev()">← Prev</button>`:''}
+        ${index<total-1?`<button class="btn btn-ghost" onclick="next()">Next →</button>`:''}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="saveTestToStorage()" style="border-color:rgba(5,150,105,0.3);color:#047857;background:rgba(5,150,105,0.07);">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save Test
+        </button>
+        ${index===total-1?`<button class="btn btn-success" onclick="startTest()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Launch Test
+        </button>`:'<div></div>'}
+      </div>
+    </div>
+  `;
+}
+
+function escHtml(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function save(){
+  let s=sectionData[index];
+  s.name=document.getElementById("name").value.trim();
+  s.marks=document.getElementById("marks").value;
+  s.neg=document.getElementById("neg").value;
+  s.h=document.getElementById("h").value;
+  s.m=document.getElementById("m").value;
+  s.s=document.getElementById("s_inp").value;
+
+  // Parse time for this section
+  let h=parseInt(s.h)||0;
+  let m=parseInt(s.m)||0;
+  let sv=parseInt(s.s)||0;
+  s.timeLeft=h*3600+m*60+sv;
+}
+
+function handleExcel(e){
+  let file=e.target.files[0];
+  if(!file)return;
+  sectionData[index].marks=document.getElementById("marks").value;
+  sectionData[index].neg=document.getElementById("neg").value;
+  let defMarks=parseFloat(sectionData[index].marks)||null;
+  let defNeg=parseFloat(sectionData[index].neg);
+  let hasDefNeg = sectionData[index].neg.trim() !== "";
+
+  let reader=new FileReader();
+  reader.onload=function(evt){
+    let data=new Uint8Array(evt.target.result);
+    let wb=XLSX.read(data,{type:'array'});
+    let sheet=wb.Sheets[wb.SheetNames[0]];
+    let json=XLSX.utils.sheet_to_json(sheet);
+    let loaded=[];
+    json.forEach(row=>{
+      let map={A:0,B:1,C:2,D:3};
+
+      // Detect missing fields
+      let missingFields=[];
+
+      // Correct Answer
+      let ansRaw=String(row["CORRECT ANSWER"]||"").trim();
+      let ansLetters=ansRaw.split(",").map(x=>x.trim().toUpperCase()).filter(x=>x);
+      let ans=ansLetters.map(x=>map[x]).filter(x=>x!==undefined);
+      let missingAnswer = !ansRaw || ans.length===0;
+      if(missingAnswer) missingFields.push("Correct Answer");
+
+      // Marks — use row value if present, else section default, else missing
+      let rowMarks=row["MAXIMUM MARKS"];
+      let marks=null;
+      let missingMarks=false;
+      if(rowMarks!==undefined && rowMarks!==null && rowMarks!==""){
+        marks=parseFloat(rowMarks);
+        if(isNaN(marks)) missingMarks=true;
+      } else if(defMarks!==null){
+        marks=defMarks;
+      } else {
+        missingMarks=true;
+      }
+      if(missingMarks) missingFields.push("Maximum Marks");
+
+      // Neg marking — use row value if present, else section default, else missing
+      let rowNeg=row["NEGATIVE MARKING"];
+      let neg=null;
+      let missingNeg=false;
+      if(rowNeg!==undefined && rowNeg!==null && rowNeg!==""){
+        neg=parseFloat(rowNeg);
+        if(isNaN(neg)) missingNeg=true;
+      } else if(hasDefNeg){
+        neg=defNeg;
+      } else {
+        // Neg marking not provided anywhere — default to 0 (not truly "missing" for scoring purposes)
+        neg=0;
+      }
+      if(missingNeg) missingFields.push("Negative Marking");
+
+      // A question is "incomplete" if correct answer OR marks is missing
+      let incomplete = missingAnswer || missingMarks;
+
+      loaded.push({
+        q: row["QUESTIONS"]||"(No question text)",
+        opt: [row["A"]||"",row["B"]||"",row["C"]||"",row["D"]||""],
+        marks: marks||0,
+        neg: neg||0,
+        ans: ans.length>0 ? ans : [],
+        multi: ans.length>1,
+        incomplete: incomplete,
+        missingFields: missingFields
+      });
+    });
+    sectionData[index].questions=loaded;
+    sectionData[index].excelName=file.name;
+    save();
+    renderForm();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function openGuide(){ document.getElementById("guideModal").classList.add("show"); }
+function closeGuide(){ document.getElementById("guideModal").classList.remove("show"); }
+
+function downloadSampleExcel(){
+  // Build sample data using SheetJS
+  let ws_data = [
+    ["QUESTIONS","A","B","C","D","CORRECT ANSWER","MAXIMUM MARKS","NEGATIVE MARKING"],
+    ["What is the capital of India?","Mumbai","New Delhi","Chennai","Kolkata","B",2,0.5],
+    ["How many planets are in the solar system?","7","8","9","10","B",2,0.5],
+    ["Which are primary colours? (Select all)","Red","Blue","Green","Yellow","A,B,C",3,0],
+    ["Who wrote the Indian Constitution?","Gandhi","Nehru","Ambedkar","Patel","C",2,0.5],
+    ["Which is the largest ocean?","Atlantic","Indian","Arctic","Pacific","D",2,0.5],
+  ];
+  let wb = XLSX.utils.book_new();
+  let ws = XLSX.utils.aoa_to_sheet(ws_data);
+  // Column widths
+  ws['!cols'] = [
+    {wch:42},{wch:16},{wch:16},{wch:16},{wch:16},{wch:18},{wch:16},{wch:18}
+  ];
+  XLSX.utils.book_append_sheet(wb, ws, "Questions");
+  XLSX.writeFile(wb, "ExamForge_Sample.xlsx");
+}
+
+function next(){save();if(index<total-1){index++;renderForm();}}
+function prev(){save();if(index>0){index--;renderForm();}}
+
+/* ─── INSTRUCTIONS + FULLSCREEN ─── */
+let pendingTestData = null;
+
+function startTest(){
+  save();
+  if(sectionData.every(s=>s.questions.length===0)){
+    alert("No questions added! Please upload an Excel file for at least one section.");
+    return;
+  }
+
+  // Check if any section has no time set
+  let hasNoTime = sectionData.some(s => !s.h && !s.m && !s.s);
+  if(hasNoTime){
+    showConfirm(
+      "⏱️",
+      "No Time Limit Set",
+      "One or more sections have no duration set. Those sections will have no time limit — you can take as long as you want. Do you want to continue?",
+      "Yes, Continue",
+      "btn-primary",
+      _doStartTest
+    );
+    return;
+  }
+  _doStartTest();
+}
+
+function _doStartTest(){
+  // Build question data
+  questions=[];answers=[];userAnswers=[];reviewMark=[];sectionMap=[];
+  sectionData.forEach((sec,i)=>{
+    let start=questions.length;
+    sec.questions.forEach(q=>{
+      questions.push({...q,section:i});
+      answers.push(q.ans);
+      userAnswers.push([]);
+      reviewMark.push(false);
+    });
+    sectionMap.push({
+      name:sec.name||('Section '+(i+1)),
+      start,
+      end:questions.length-1,
+      timeLeft: sec.timeLeft > 0 ? sec.timeLeft : 0
+    });
+  });
+
+  // Show instructions screen
+  document.getElementById("setup").style.display="none";
+  document.getElementById("instructionsBox").style.display="flex";
+
+  // Build header
+  let totalQ = questions.length;
+  document.getElementById("instrTestTitle").textContent = sectionMap.length > 1 ? `${sectionMap.length}-Section Test` : (sectionMap[0]?.name || "Test");
+  document.getElementById("instrTestMeta").textContent = `${totalQ} question${totalQ!==1?'s':''} · Read carefully before beginning`;
+
+  // Build dynamic section breakdown
+  let bd = document.getElementById("instrSectionBreakdown");
+  bd.innerHTML = "";
+  sectionMap.forEach((sec, si) => {
+    let secQs = questions.slice(sec.start, sec.end + 1);
+    let validQs = secQs.filter(q=>!q.incomplete);
+    let marksSet = [...new Set(validQs.map(q=>q.marks))];
+    let negSet   = [...new Set(validQs.map(q=>q.neg))];
+    // Fixed range format: "to" instead of "– +"
+    let marksStr = marksSet.length===0 ? "N/A"
+      : marksSet.length===1 ? `+${marksSet[0]}`
+      : `+${Math.min(...marksSet)} to +${Math.max(...marksSet)}`;
+    let negStr = negSet.length===0 ? "-0"
+      : negSet.length===1 ? `-${negSet[0]}`
+      : `-${Math.min(...negSet)} to -${Math.max(...negSet)}`;
+    let tl = sec.timeLeft;
+    let h=Math.floor(tl/3600), m=Math.floor((tl%3600)/60), s=tl%60;
+    let pad=n=>String(n).padStart(2,'0');
+    let timeStr = tl <= 0 ? "No Limit" : h>0 ? `${h}h ${pad(m)}m` : m>0 ? `${m}m ${pad(s)}s` : `${s}s`;
+    let incomplete = secQs.filter(q=>q.incomplete).length;
+    let card = document.createElement("div");
+    card.className = "sec-info-card";
+    card.innerHTML = `
+      <div class="sec-info-name">${sectionMap.length>1?`Section ${si+1}: `:''}${sec.name}</div>
+      <div class="sec-info-pills">
+        <span class="sec-pill sec-pill-time">⏱ ${timeStr}</span>
+        <span class="sec-pill sec-pill-q">📝 ${secQs.length} question${secQs.length!==1?'s':''}</span>
+        <span class="sec-pill sec-pill-marks">${marksStr} per correct</span>
+        <span class="sec-pill sec-pill-neg">${negStr} per wrong</span>
+        ${incomplete>0?`<span class="sec-pill" style="background:rgba(217,119,6,0.10);color:#92400e;border:1px solid rgba(217,119,6,0.22);">⚠️ ${incomplete} missing data</span>`:''}
+      </div>`;
+    bd.appendChild(card);
+  });
+  if(sectionMap.length>1){
+    let note = document.createElement("p");
+    note.style.cssText = "font-size:0.82rem;font-weight:600;color:#475569;margin-bottom:16px;";
+    note.textContent = "Each section has its own timer. You cannot go back to a previous section once its time ends or you advance.";
+    bd.appendChild(note);
+  }
+
+  checkFsStatus();
+}
+
+function enterFullScreenForTest(){
+  document.documentElement.requestFullscreen().catch(()=>{});
+}
+
+function goBackToSetup(){
+  document.getElementById("instructionsBox").style.display="none";
+  document.getElementById("setup").style.display="flex";
+  // Restore form to last section
+  index = sectionData.length - 1;
+  renderForm();
+}
+
+function checkFsStatus(){
+  let inFs = !!document.fullscreenElement;
+  let dot = document.getElementById("fsStatusDot");
+  let lbl = document.getElementById("fsStatusLabel");
+  let btn = document.getElementById("startTestBtn");
+  if(!dot) return;
+  if(inFs){
+    dot.classList.add("active");
+    lbl.classList.add("active");
+    lbl.textContent = "Full Screen active — you're good to go!";
+    btn.classList.add("ready");
+  } else {
+    dot.classList.remove("active");
+    lbl.classList.remove("active");
+    lbl.textContent = "Not in Full Screen — please click Enter Full Screen";
+    btn.classList.remove("ready");
+  }
+}
+
+// Listen for fullscreen changes to update the button state live
+let fsViolations = 0;
+let testActive = false; // true while exam is in progress
+
+document.addEventListener("fullscreenchange", ()=>{
+  if(document.fullscreenElement){
+    // Re-entered fullscreen — hide warning if shown
+    document.getElementById("fsWarningModal").style.display = "none";
+    checkFsStatus();
+  } else {
+    checkFsStatus();
+    // Only trigger violation if test is actively running
+    if(testActive){
+      fsViolations++;
+      let remaining = 3 - fsViolations;
+      let msg = document.getElementById("fsWarningMsg");
+      let cntEl = document.getElementById("fsViolationCount");
+      if(remaining <= 0){
+        // Auto-submit
+        document.getElementById("fsWarningModal").style.display = "none";
+        testActive = false;
+        submitTest();
+      } else {
+        if(msg) msg.textContent = "You have exited full screen mode. The test requires full screen to continue.";
+        if(cntEl) cntEl.textContent = `Warning ${fsViolations} of 3 — ${remaining} violation${remaining===1?'':'s'} remaining before auto-submit.`;
+        document.getElementById("fsWarningModal").style.display = "flex";
+      }
+    }
+  }
+});
+
+function reEnterFullScreen(){
+  document.documentElement.requestFullscreen().catch(()=>{});
+  // Modal will auto-hide when fullscreenchange fires and fullscreenElement is set
+}
+
+function launchTestFromInstructions(){
+  if(!document.fullscreenElement) return;
+  document.getElementById("instructionsBox").style.display="none";
+  document.getElementById("examLayout").style.display="block";
+  fsViolations = 0;
+  testActive = true;
+  currentSection=0;
+  startSectionTimer(0);
+  loadQ(sectionMap[0].start);
+}
+
+/* ─── CUSTOM CONFIRM MODAL ─── */
+let confirmCallback = null;
+
+function showConfirm(icon, title, sub, okLabel, okClass, callback){
+  document.getElementById("confirmIcon").textContent = icon;
+  document.getElementById("confirmTitle").textContent = title;
+  document.getElementById("confirmSub").textContent = sub;
+  let okBtn = document.getElementById("confirmOkBtn");
+  okBtn.textContent = okLabel;
+  okBtn.className = `btn ${okClass}`;
+  confirmCallback = callback;
+  document.getElementById("confirmModal").classList.add("show");
+}
+
+function closeConfirm(){
+  document.getElementById("confirmModal").classList.remove("show");
+  confirmCallback = null;
+}
+
+function confirmOkAction(){
+  document.getElementById("confirmModal").classList.remove("show");
+  if(confirmCallback) confirmCallback();
+  confirmCallback = null;
+}
+
+function confirmSubmit(){
+  showConfirm(
+    "📝",
+    "Submit the Test?",
+    "Once submitted, you cannot change any answers. Your final score will be calculated immediately.",
+    "Submit Test",
+    "btn-danger",
+    submitTest
+  );
+}
+
+function confirmSectionAdvance(){
+  let sec = questions[current].section;
+  let secName = sectionMap[sec].name;
+  let nextName = sectionMap[sec+1].name;
+  showConfirm(
+    "➡️",
+    `Submit "${secName}"?`,
+    `You will move to "${nextName}" and cannot return to this section.`,
+    "Submit & Continue",
+    "btn-next-section",
+    ()=>{
+      clearInterval(timerInterval);
+      document.getElementById("sectionModal").classList.remove("show");
+      currentSection = sec + 1;
+      document.getElementById("timer").classList.remove("urgent");
+      startSectionTimer(currentSection);
+      loadQ(sectionMap[currentSection].start);
+      setFilter('all', document.querySelector('.filter-tab'));
+    }
+  );
+}
+
+function goFullScreen(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+}
+
+function exitFullScreen(){
+  if(document.fullscreenElement) document.exitFullscreen();
+}
+
+function startSectionTimer(secIdx){
+  clearInterval(timerInterval);
+  timeLeft = sectionMap[secIdx].timeLeft;
+  let timerEl = document.getElementById("timer");
+
+  // No time set — show "No Limit" and don't count down
+  if(timeLeft <= 0){
+    timerEl.classList.remove("urgent");
+    timerEl.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      No Limit`;
+    timerEl.style.background = "rgba(71,85,105,0.07)";
+    timerEl.style.borderColor = "rgba(71,85,105,0.18)";
+    timerEl.style.color = "#475569";
+    return;
+  }
+
+  // Reset timer styling
+  timerEl.style.background = "";
+  timerEl.style.borderColor = "";
+  timerEl.style.color = "";
+
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    let h=Math.floor(timeLeft/3600);
+    let m=Math.floor((timeLeft%3600)/60);
+    let s=timeLeft%60;
+    let pad=n=>String(n).padStart(2,'0');
+    timerEl.innerHTML=`
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      ${pad(h)}:${pad(m)}:${pad(s)}`;
+    timerEl.classList.toggle("urgent", timeLeft<=300);
+    if(timeLeft<=0){
+      clearInterval(timerInterval);
+      sectionTimeUp(secIdx);
+    }
+  },1000);
+}
+
+function sectionTimeUp(secIdx){
+  let isLast=(secIdx>=sectionMap.length-1);
+  if(isLast){
+    // Last section — submit
+    submitTest();
+  } else {
+    // Show modal to proceed to next section
+    document.getElementById("modalTitle").textContent="Section Time Up!";
+    document.getElementById("modalSub").textContent=
+      `"${sectionMap[secIdx].name}" time has ended. Ready to start "${sectionMap[secIdx+1].name}"?`;
+    document.getElementById("modalBtnText").textContent="Start Next Section";
+    document.getElementById("sectionModal").classList.add("show");
+  }
+}
+
+function proceedToNextSection(){
+  document.getElementById("sectionModal").classList.remove("show");
+  currentSection++;
+  document.getElementById("timer").classList.remove("urgent");
+  startSectionTimer(currentSection);
+  loadQ(sectionMap[currentSection].start);
+  // Reset filter tabs
+  setFilter('all', document.querySelector('.filter-tab'));
+}
+
+function toggleOption(i){
+  let q = questions[current];
+  let arr = userAnswers[current];
+  let isMulti = q.multi || q.ans.length > 1;
+
+  if(arr.includes(i)){
+    // Deselect
+    userAnswers[current] = arr.filter(x => x !== i);
+  } else {
+    if(isMulti){
+      // Allow multiple selections
+      arr.push(i);
+    } else {
+      // Single answer — replace any existing selection
+      userAnswers[current] = [i];
+    }
+  }
+
+  let labels=["A","B","C","D","E","F"];
+  let html="";
+  q.opt.forEach((o,j)=>{
+    let sel=userAnswers[current].includes(j);
+    html+=`<div class="option ${sel?'selected':''}" onclick="toggleOption(${j})">
+      <div class="opt-label">${labels[j]||j+1}</div>
+      <div class="opt-text">${o}</div>
+    </div>`;
+  });
+  document.getElementById("options").innerHTML=html;
+  let attempted=userAnswers.filter(a=>a.length>0).length;
+  document.getElementById("progressFill").style.width=((attempted/questions.length)*100)+"%";
+  renderPalette();
+}
+
+function loadQ(i){
+  current=i;
+  let q=questions[i];
+  let sec=q.section;
+  currentSection=sec;
+
+  document.getElementById("sectionPill").textContent=sectionMap[sec].name;
+  document.getElementById("paletteSectionName").textContent=sectionMap[sec].name;
+
+  document.getElementById("qMeta").innerHTML=`
+    <span class="q-meta-chip chip-num">Q ${i-sectionMap[sec].start+1} / ${sectionMap[sec].end-sectionMap[sec].start+1}</span>
+    ${q.incomplete
+      ? `<span class="q-meta-chip" style="background:rgba(217,119,6,0.12);border:1px solid rgba(217,119,6,0.3);color:#92400e;">⚠️ Missing: ${q.missingFields.join(', ')} — Not scored</span>`
+      : `<span class="q-meta-chip chip-marks">+${q.marks} marks</span><span class="q-meta-chip chip-neg">−${q.neg} negative</span>${(q.multi||q.ans.length>1)?'<span class="q-meta-chip" style="background:rgba(124,58,237,0.10);border:1px solid rgba(124,58,237,0.25);color:#6d28d9;">✦ Multi-Answer</span>':''}`
+    }
+  `;
+
+  document.getElementById("question").textContent=q.q;
+
+  let labels=["A","B","C","D","E","F"];
+  let html="";
+  q.opt.forEach((o,j)=>{
+    let sel=userAnswers[i].includes(j);
+    html+=`<div class="option ${sel?'selected':''}" onclick="toggleOption(${j})">
+      <div class="opt-label">${labels[j]||j+1}</div>
+      <div class="opt-text">${o}</div>
+    </div>`;
+  });
+  document.getElementById("options").innerHTML=html;
+
+  let attempted=userAnswers.filter(a=>a.length>0).length;
+  document.getElementById("progressFill").style.width=((attempted/questions.length)*100)+"%";
+
+  // Show "Submit & Go To Next Section" only at last Q of a non-final section (multi-section tests only)
+  let isLastQOfSection = (i === sectionMap[sec].end);
+  let isLastSection    = (sec === sectionMap.length - 1);
+  let showAdvance      = isLastQOfSection && !isLastSection && sectionMap.length > 1;
+  document.getElementById("sectionAdvanceBtn").style.display = showAdvance ? "block" : "none";
+
+  // Hide Next button at the last question of every section
+  document.getElementById("nextBtn").style.display = isLastQOfSection ? "none" : "";
+
+  document.getElementById("left").scrollTo({top:0,behavior:'smooth'});
+  renderPalette();
+}
+
+function nextQ(){
+  let sec=questions[current].section;
+  let secEnd=sectionMap[sec].end;
+  if(current<secEnd) loadQ(current+1);
+  // Don't jump to next section manually — only timer does that
+}
+
+function markReview(){reviewMark[current]=!reviewMark[current];renderPalette();}
+
+function setFilter(f, el){
+  filter=f;
+  document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  renderPalette();
+}
+
+function renderPalette(){
+  let sec=questions[current].section;
+  let start=sectionMap[sec].start;
+  let end=sectionMap[sec].end;
+  let html="";
+  for(let i=start;i<=end;i++){
+    let cls="not";
+    if(userAnswers[i].length>0)cls="attempted";
+    if(reviewMark[i])cls="review";
+    if(filter==="attempted"&&cls!=="attempted")continue;
+    if(filter==="not"&&cls!=="not")continue;
+    if(filter==="review"&&cls!=="review")continue;
+    html+=`<button class="palette-btn ${cls} ${i===current?'active-q':''}" onclick="loadQ(${i})">${i-start+1}</button>`;
+  }
+  document.getElementById("palette").innerHTML=html;
+}
+
+function arraysEqual(a,b){
+  if(!a||!b)return false;
+  return a.length===b.length&&a.every(v=>b.includes(v));
+}
+
+function submitTest(){
+  clearInterval(timerInterval);
+  testActive = false;
+  document.getElementById("sectionModal").classList.remove("show");
+  document.getElementById("confirmModal").classList.remove("show");
+  document.getElementById("fsWarningModal").style.display = "none";
+  let score=0,correct=0,wrong=0,un=0,maxMarks=0;
+  questions.forEach((q,i)=>{
+    if(q.incomplete) return;
+    maxMarks+=q.marks;
+    let user=userAnswers[i],ans=answers[i];
+    if(user.length===0)un++;
+    else if(arraysEqual(user,ans)){score+=q.marks;correct++;}
+    else{score-=q.neg;wrong++;}
+  });
+  let pct=maxMarks>0?Math.max(0,(score/maxMarks)*100):0;
+  document.getElementById("examLayout").style.display="none";
+  let rb=document.getElementById("resultBox");
+  rb.style.display="flex";
+  document.getElementById("scoreDisplay").textContent=score.toFixed(2);
+  document.getElementById("statMaxMarks").textContent=maxMarks.toFixed(maxMarks%1===0?0:2);
+  document.getElementById("statPercent").textContent=pct.toFixed(1)+"%";
+  document.getElementById("statCorrect").textContent=correct;
+  document.getElementById("statWrong").textContent=wrong;
+  document.getElementById("statSkip").textContent=un;
+  // Show exit fullscreen button if still in fullscreen
+  let exitBtn = document.getElementById("exitFsBtn");
+  if(exitBtn) exitBtn.style.display = document.fullscreenElement ? "flex" : "none";
+}
+
+// Multi-select filters — Set of active types, min 1 always selected
+// Possible values: 'all', 'correct', 'wrong', 'skipped'
+let activeFilters = new Set(['all']);
+let selectedSections = [];
+
+function showAnalysis(){
+  activeFilters = new Set(['all']);
+  selectedSections = sectionMap.map((_, i) => i);
+  renderAnalysis();
+}
+
+function filterAnalysis(type){
+  if(type === 'all'){
+    // "All" clears everything else and selects only itself
+    activeFilters = new Set(['all']);
+  } else {
+    // Remove "All" if present — we're now in specific-filter mode
+    activeFilters.delete('all');
+
+    if(activeFilters.has(type)){
+      // Deselect — only allowed if at least 1 other filter remains
+      if(activeFilters.size > 1){
+        activeFilters.delete(type);
+      }
+      // else: last one — do nothing (can't deselect the last filter)
+    } else {
+      activeFilters.add(type);
+    }
+
+    // If somehow nothing is active, fall back to 'all'
+    if(activeFilters.size === 0) activeFilters = new Set(['all']);
+  }
+  renderAnalysis();
+}
+
+function toggleSectionDropdown(){
+  let menu = document.getElementById("sectionDropMenu");
+  let trigger = document.getElementById("sectionDropTrigger");
+  if(!menu) return;
+  let isOpen = menu.classList.toggle("open");
+  trigger.classList.toggle("open", isOpen);
+}
+
+document.addEventListener("click", function(e){
+  let wrap = document.getElementById("sectionDropWrap");
+  if(wrap && !wrap.contains(e.target)){
+    let menu = document.getElementById("sectionDropMenu");
+    let trigger = document.getElementById("sectionDropTrigger");
+    if(menu) menu.classList.remove("open");
+    if(trigger) trigger.classList.remove("open");
+  }
+});
+
+function toggleSectionSelection(idx){
+  if(idx === -1){
+    if(selectedSections.length === sectionMap.length){
+      selectedSections = [];
+    } else {
+      selectedSections = sectionMap.map((_, i) => i);
+    }
+    sectionMap.forEach((_, i) => {
+      let cb = document.getElementById(`sd-sec-${i}`);
+      if(cb) cb.checked = selectedSections.includes(i);
+    });
+    let allCb = document.getElementById("sd-all");
+    if(allCb) allCb.checked = selectedSections.length === sectionMap.length;
+  } else {
+    if(selectedSections.includes(idx)){
+      selectedSections = selectedSections.filter(s => s !== idx);
+    } else {
+      selectedSections.push(idx);
+      selectedSections.sort((a,b)=>a-b);
+    }
+    let allCb = document.getElementById("sd-all");
+    if(allCb) allCb.checked = selectedSections.length === sectionMap.length;
+  }
+  updateDropdownTriggerLabel();
+  renderAnalysis();
+}
+
+function updateDropdownTriggerLabel(){
+  let lbl = document.querySelector("#sectionDropTrigger .sd-trigger-label");
+  if(!lbl) return;
+  if(selectedSections.length === 0) lbl.textContent = "No sections selected";
+  else if(selectedSections.length === sectionMap.length) lbl.textContent = "All Sections";
+  else if(selectedSections.length === 1) lbl.textContent = sectionMap[selectedSections[0]].name;
+  else lbl.textContent = `${selectedSections.length} sections selected`;
+}
+
+function toggleOptions(id){
+  let opts = document.getElementById('ao-'+id);
+  let btn  = document.getElementById('eyebtn-'+id);
+  if(!opts) return;
+  let visible = opts.classList.toggle('visible');
+  btn.classList.toggle('open', visible);
+  btn.innerHTML = visible
+    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+    : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+}
+
+function renderAnalysis(){
+  let labels = ["A","B","C","D","E","F"];
+
+  // Build section dropdown
+  let ddItems = `<div class="sd-item sd-item-all" onclick="toggleSectionSelection(-1)">
+    <input type="checkbox" id="sd-all" ${selectedSections.length===sectionMap.length?'checked':''} onclick="event.stopPropagation();toggleSectionSelection(-1)">
+    All Sections
+  </div>`;
+  sectionMap.forEach((sec, i) => {
+    ddItems += `<div class="sd-item" onclick="toggleSectionSelection(${i})">
+      <input type="checkbox" id="sd-sec-${i}" ${selectedSections.includes(i)?'checked':''} onclick="event.stopPropagation();toggleSectionSelection(${i})">
+      ${sec.name}
+    </div>`;
+  });
+
+  let triggerLabel = selectedSections.length===sectionMap.length ? "All Sections"
+    : selectedSections.length===0 ? "No sections selected"
+    : selectedSections.length===1 ? sectionMap[selectedSections[0]].name
+    : `${selectedSections.length} sections selected`;
+
+  let topBar = `<div class="analysis-top-bar">
+    <span class="analysis-top-bar-label">Section:</span>
+    <div class="section-dropdown-wrap" id="sectionDropWrap">
+      <div class="section-dropdown-trigger" id="sectionDropTrigger" onclick="toggleSectionDropdown()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 6h16M4 12h16M4 18h8"/></svg>
+        <span class="sd-trigger-label">${triggerLabel}</span>
+        <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-dropdown-menu" id="sectionDropMenu">${ddItems}</div>
+    </div>
+  </div>`;
+
+  let html = topBar;
+
+  if(selectedSections.length === 0){
+    html += `<div style="text-align:center;padding:32px 0;color:#94a3b8;font-size:0.88rem;font-weight:600;">Select at least one section above to view questions.</div>`;
+    document.getElementById("analysis").innerHTML = html;
+    return;
+  }
+
+  // Helper to build filter buttons with correct active state
+  function filterBtns(){
+    return `<div class="analysis-filters">
+      <button class="af-btn ${activeFilters.has('all')?'active-all':''}"         onclick="filterAnalysis('all')">All</button>
+      <button class="af-btn ${activeFilters.has('correct')?'active-correct':''}" onclick="filterAnalysis('correct')">✓ Correct</button>
+      <button class="af-btn ${activeFilters.has('wrong')?'active-wrong':''}"     onclick="filterAnalysis('wrong')">✗ Wrong</button>
+      <button class="af-btn ${activeFilters.has('skipped')?'active-skipped':''}" onclick="filterAnalysis('skipped')">— Skipped</button>
+    </div>`;
+  }
+
+  let showSecHeading = true; // always show section heading with filters
+
+  selectedSections.forEach(si => {
+    let sec = sectionMap[si];
+    let sectionItems = "";
+    let count = 0;
+    let showAll = activeFilters.has('all');
+
+    for(let i = sec.start; i <= sec.end; i++){
+      let q = questions[i];
+      let qNum = i - sec.start + 1;
+      let uid = `${sec.start}-${i}`;
+
+      if(q.incomplete){
+        if(!activeFilters.has('all')) continue;
+        count++;
+        let missingList = q.missingFields.join(", ");
+        sectionItems += `<div class="analysis-item" style="border-color:rgba(217,119,6,0.3);background:#fffbf0;">
+          <div class="analysis-item-header"><div class="analysis-qtext"><strong>Q${qNum}.</strong> ${q.q}</div></div>
+          <div style="margin-top:10px;padding:10px 12px;background:rgba(217,119,6,0.10);border:1.5px solid rgba(217,119,6,0.25);border-radius:8px;font-size:0.82rem;font-weight:700;color:#92400e;">
+            ⚠️ Missing in Excel: <span style="font-weight:800;">${missingList}</span> — Excluded from marks calculation.
+          </div></div>`;
+        continue;
+      }
+
+      let isCorrect = arraysEqual(userAnswers[i], answers[i]);
+      let isSkipped = userAnswers[i].length === 0;
+      let isWrong   = !isSkipped && !isCorrect;
+
+      if(!activeFilters.has('all')){
+        let typeMatches = (isCorrect && activeFilters.has('correct'))
+                       || (isWrong   && activeFilters.has('wrong'))
+                       || (isSkipped && activeFilters.has('skipped'));
+        if(!typeMatches) continue;
+      }
+
+      count++;
+      let correctText = answers[i].map(x => q.opt[x]).join(" / ");
+      let yourText    = isSkipped ? null : userAnswers[i].map(x => q.opt[x]).join(" / ");
+
+      let answerRows = isCorrect
+        ? `<div class="ans-row"><span class="ans-row-label correct-label">Correct Answer ✓</span><span class="ans-text-correct">${correctText}</span></div>`
+        : isWrong
+        ? `<div class="ans-row"><span class="ans-row-label your-wrong-label">Your Answer ✗</span><span class="ans-text-wrong">${yourText}</span></div>
+           <div class="ans-row"><span class="ans-row-label correct-label">Correct Answer</span><span class="ans-text-correct">${correctText}</span></div>`
+        : `<div class="ans-row"><span class="ans-row-label your-skip-label">Not Attempted</span><span class="ans-text-skip">—</span></div>
+           <div class="ans-row"><span class="ans-row-label correct-label">Correct Answer</span><span class="ans-text-correct">${correctText}</span></div>`;
+
+      let optionsHtml = q.opt.map((o, j) => {
+        let isAns = answers[i].includes(j), isChosen = userAnswers[i].includes(j);
+        let cls = isAns ? "is-correct" : (isChosen ? "is-wrong" : "");
+        return `<div class="ao-item ${cls}"><div class="ao-lbl">${labels[j]||j+1}</div><div>${o}</div></div>`;
+      }).join("");
+
+      sectionItems += `<div class="analysis-item" data-type="${isCorrect?'correct':isWrong?'wrong':'skipped'}">
+        <div class="analysis-item-header">
+          <div class="analysis-qtext"><strong>Q${qNum}.</strong> ${q.q}</div>
+          <button class="eye-btn" id="eyebtn-${uid}" onclick="toggleOptions('${uid}')" title="Show/hide options">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="analysis-options" id="ao-${uid}">${optionsHtml}</div>
+        <div class="analysis-answers">${answerRows}</div>
+      </div>`;
+    }
+
+    if(count === 0){
+      let isAll = activeFilters.has('all');
+      let activeList = [...activeFilters].join(' / ');
+      sectionItems = `<div style="text-align:center;padding:20px 0;color:#94a3b8;font-size:0.88rem;font-weight:600;">No ${isAll?'':activeList+' '}questions in this section.</div>`;
+    }
+
+    if(showSecHeading){
+      html += `<div class="analysis-section-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 6h16M4 12h16M4 18h8"/></svg>
+        ${sec.name}
+        ${filterBtns()}
+      </div>`;
+    }
+    html += sectionItems;
+  });
+
+  document.getElementById("analysis").innerHTML = html;
+}
+
+function restartTest(){
+  userAnswers=questions.map(()=>[]);
+  reviewMark=questions.map(()=>false);
+  document.getElementById("resultBox").style.display="none";
+  document.getElementById("analysis").innerHTML="";
+  testActive = false;
+  fsViolations = 0;
+  // Go back to instructions screen
+  document.getElementById("instructionsBox").style.display="flex";
+  checkFsStatus();
+}
+
+/* ─── SAVED TESTS (localStorage) ─── */
+const STORAGE_KEY = "examforge_saved_tests";
+
+function getSavedTests(){
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }
+  catch(e){ return []; }
+}
+
+function setSavedTests(arr){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+function saveTestToStorage(){
+  save();
+  if(sectionData.every(s=>s.questions.length===0)){
+    alert("No questions loaded yet — upload an Excel file before saving.");
+    return;
+  }
+  let defaultName = sectionData.map(s=>s.name||"Section").join(" + ") || "My Test";
+  document.getElementById("saveNameInput").value = defaultName;
+  document.getElementById("saveNameModal").style.display = "flex";
+}
+
+function confirmSaveTest(){
+  let name = document.getElementById("saveNameInput").value.trim() || "My Test";
+  document.getElementById("saveNameModal").style.display = "none";
+  let saved = getSavedTests();
+  let id = Date.now().toString();
+  let meta = sectionData.map(s=>({
+    name: s.name, qCount: s.questions.length,
+    marks: s.marks, neg: s.neg,
+    h: s.h, m: s.m, s: s.s,
+    timeLeft: s.timeLeft, excelName: s.excelName
+  }));
+  saved.push({ id, name, date: new Date().toLocaleDateString(), sections: meta, data: JSON.parse(JSON.stringify(sectionData)) });
+  setSavedTests(saved);
+  renderSavedTests();
+  // Show brief success feedback in button area
+  let btn = document.querySelector('[onclick="saveTestToStorage()"]');
+  if(btn){ let orig=btn.innerHTML; btn.innerHTML='✅ Saved!'; setTimeout(()=>{btn.innerHTML=orig;},2000); }
+}
+
+function loadTestFromStorage(id){
+  let saved = getSavedTests();
+  let test = saved.find(t=>t.id===id);
+  if(!test){ alert("Test not found."); return; }
+  // Restore sectionData
+  sectionData = test.data;
+  total = sectionData.length;
+  document.getElementById("sectionCount").value = total;
+  index = 0;
+  renderForm();
+  renderSavedTests();
+  // Scroll to form
+  document.getElementById("form").scrollIntoView({behavior:"smooth"});
+}
+
+function deleteTestFromStorage(id){
+  let saved = getSavedTests();
+  let test = saved.find(t=>t.id===id);
+  if(!test) return;
+  showConfirm(
+    "🗑️",
+    `Delete "${test.name}"?`,
+    "This saved test will be permanently removed. This cannot be undone.",
+    "Delete",
+    "btn-danger",
+    ()=>{
+      setSavedTests(getSavedTests().filter(t=>t.id!==id));
+      renderSavedTests();
+    }
+  );
+}
+
+function renderSavedTests(){
+  let saved = getSavedTests();
+  let el = document.getElementById("savedTestList");
+  if(!el) return;
+  if(saved.length===0){
+    el.innerHTML=`<div class="no-saved">No saved tests yet. Build a test and click <strong>Save Test</strong> to save it here.</div>`;
+    return;
+  }
+  el.innerHTML = saved.map(t=>{
+    let secInfo = t.sections ? t.sections.map(s=>`${s.name||"Section"} (${s.qCount}Q)`).join(" · ") : "";
+    return `<div class="saved-test-item">
+      <div class="saved-test-info">
+        <div class="saved-test-name">${t.name}</div>
+        <div class="saved-test-meta">${secInfo} &nbsp;·&nbsp; Saved ${t.date}</div>
+      </div>
+      <div class="saved-test-btns">
+        <button class="btn-load-test" onclick="loadTestFromStorage('${t.id}')">Load</button>
+        <button class="btn-del-test" onclick="deleteTestFromStorage('${t.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// Init saved tests on page load
+renderSavedTests();
+
+function goHome(){location.reload();}
+function goFullScreen(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+}
+function exitFullScreen(){
+  if(document.fullscreenElement) document.exitFullscreen();
+}
+</script>
+
+</body>
+</html>
