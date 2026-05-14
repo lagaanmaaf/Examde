@@ -2356,7 +2356,7 @@ function handleExcel(e){
     let json=XLSX.utils.sheet_to_json(sheet);
     let loaded=[];
     json.forEach(row=>{
-      let map={A:0,B:1,C:2,D:3};
+      let map={A:0,B:1,C:2,D:3,E:4,F:5,G:6};
 
       // Detect missing fields
       let missingFields=[];
@@ -2402,7 +2402,7 @@ function handleExcel(e){
 
       loaded.push({
         q: row["QUESTIONS"]||"(No question text)",
-        opt: [row["A"]||"",row["B"]||"",row["C"]||"",row["D"]||""],
+        opt: ["A","B","C","D","E","F","G"].map(l=>row[l]).filter(v=>v!==undefined && v!==null && String(v).trim()!=="").map(String),
         marks: marks||0,
         neg: neg||0,
         ans: ans.length>0 ? ans : [],
